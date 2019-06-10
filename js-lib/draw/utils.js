@@ -1,4 +1,4 @@
-import { SPECIAL_VALUE } from '../constants';
+import { SPECIAL_VALUE, ERASE_CHAR, CHI_PLACEHOLD_CHAR } from '../constants';
 import { Box } from '../common';
 import State from '../state';
 import Vector from '../vector';
@@ -61,7 +61,16 @@ export function drawText(state, position, text) {
       x = 0;
       continue;
     }
-    state.drawValue(position.add(new Vector(x, y)), char);
+    if(state.isChiPlacehold(state.getDrawValue(position.add(new Vector(x, y))))) x = x-1;
+    if (state.isChiChar(char)){
+      state.drawValueWithoutErase(position.add(new Vector(x, y)), char);
+      x++;
+      state.drawValueWithoutErase(position.add(new Vector(x, y)), CHI_PLACEHOLD_CHAR);
+    }else{
+       state.drawValueWithoutErase(position.add(new Vector(x, y)), char);
+    }
     x++;
   }
 }
+
+

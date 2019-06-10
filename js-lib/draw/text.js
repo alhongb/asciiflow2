@@ -29,7 +29,7 @@ export default class DrawText {
 
     // Effectively highlights the starting cell.
     var currentValue = this.state.getCell(this.startPosition).getRawValue();
-    this.state.drawValue(this.startPosition,
+    this.state.drawValueWithoutErase(this.startPosition,
         currentValue == null ? ERASE_CHAR : currentValue);
   }
 
@@ -93,7 +93,7 @@ export default class DrawText {
       } else if (!cell.isSpecial()) {
         spacesCount = 0;
         text += cell.getRawValue();
-        this.state.drawValue(currentPosition, cell.getRawValue());
+        this.state.drawValueWithoutErase(currentPosition, cell.getRawValue());
       }
       currentPosition.x++;
     }

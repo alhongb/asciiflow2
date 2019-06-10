@@ -28,6 +28,15 @@ export default class State {
     }
   }
 
+  isChiChar(char){
+    var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");
+    return reg.test(char);
+  }
+
+  isChiPlacehold(char){
+    return char == c.CHI_PLACEHOLD_CHAR;
+  }
+
   /**
    * This clears the entire state, but is undoable.
    */
@@ -59,10 +68,31 @@ export default class State {
    * @param {Vector} position
    * @param {?string} value
    */
-  drawValue(position, value) {
+  drawValueWithoutErase(position, value) {
     var cell = this.getCell(position);
     this.scratchCells.push(new MappedCell(position, cell));
     cell.scratchValue = value;
+    this.dirty = true;
+  }
+
+  drawValue(position, value){
+    var cell = this.getCell(position);
+    this.scratchCells.push(new MappedCell(position, cell));
+    cell.scratchValue = value;
+    this.dirty = true;
+    if(this.isChiChar(this.getDrawValue(position.add(new Vector(-1, 0))))) {
+      position = position.add(new Vector(-1, 0));
+      var chiCell = this.getCell(position);
+      this.scratchCells.push(new MappedCell(position, chiCell));
+      chiCell.scratchValue = c.ERASE_CHAR;
+      this.dirty = true;
+    }
+  }
+
+  eraseValue(position){
+    var cell = this.getCell(position);
+    this.scratchCells.push(new MappedCell(position, cell));
+    cell.scratchValue = c.ERASE_CHAR;
     this.dirty = true;
   }
 
@@ -253,7 +283,7 @@ export default class State {
 
     var lastState = this.undoStates.pop();
     for (var { position, value } of lastState) {
-      this.drawValue(position, value);
+      this.drawValueWithoutErase(position, value);
     }
     this.commitDraw(true);
   }
@@ -266,7 +296,7 @@ export default class State {
 
     var lastState = this.redoStates.pop();
     for (var { position, value } of lastState) {
-      this.drawValue(position, value);
+      this.drawValueWithoutErase(position, value);
     }
     this.commitDraw();
   }
@@ -304,6 +334,10 @@ export default class State {
       for (var i = start.x; i <= end.x; i++) {
         var val = this.getDrawValue(new Vector(i, j));
         line += (val == null || val == c.ERASE_CHAR) ? ' ' : val;
+        if(this.isChiChar(val)){
+          i++;
+          continue;
+        }
       }
       // Trim end whitespace.
       output += line.replace(/\s+$/, '') + '\n';
@@ -324,7 +358,7 @@ export default class State {
     }
     for (var j = 0; j < lines.length; j++) {
       var line = lines[j];
-      for (var i = 0; i < line.length; i++) {
+      for (var i = 0, k = 0; i < line.length; i++, k++) {
         var char = line.charAt(i);
         // Convert special output back to special chars.
         // TODO: This is a horrible hack, need to handle multiple special chars
@@ -332,7 +366,12 @@ export default class State {
         if (c.SPECIAL_VALUES.includes(char)) {
           char = c.SPECIAL_VALUE;
         }
-        this.drawValue(new Vector(i, j).add(offset).subtract(middle), char);
+        if(this.isChiChar(char)){
+          this.drawValueWithoutErase(new Vector(k, j).add(offset).subtract(middle), char);
+          k++;
+          this.drawValueWithoutErase(new Vector(k, j).add(offset).subtract(middle), c.CHI_PLACEHOLD_CHAR);
+        }
+        else this.drawValueWithoutErase(new Vector(k, j).add(offset).subtract(middle), char);
       }
     }
   }

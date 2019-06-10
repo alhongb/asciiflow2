@@ -82,7 +82,7 @@ export default class DrawSelect {
         var current = new Vector(i, j);
         // Effectively highlights the cell.
         var currentValue = this.state.getCell(current).getRawValue();
-        this.state.drawValue(current,
+        this.state.drawValueWithoutErase(current,
             currentValue == null ? ERASE_CHAR : currentValue);
       }
     }
@@ -100,7 +100,7 @@ export default class DrawSelect {
 
   drawSelected(startPos) {
     for (var { position, value } of this.selectedCells) {
-      this.state.drawValue(position.add(startPos), value);
+      this.state.drawValueWithoutErase(position.add(startPos), value);
     }
   }
 

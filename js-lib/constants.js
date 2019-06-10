@@ -19,6 +19,7 @@ export const SPECIAL_LINE_H = '-';
 export const SPECIAL_LINE_V = '|';
 
 export const ERASE_CHAR = '\u2009';
+export const CHI_PLACEHOLD_CHAR = '\u200B';
 
 export const DRAG_LATENCY = 150; // Milliseconds.
 export const DRAG_ACCURACY = 6; // Pixels.
